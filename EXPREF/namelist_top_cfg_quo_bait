@@ -11,7 +11,7 @@
 !-----------------------------------------------------------------------
 &namtrc          !   tracers definition
 !-----------------------------------------------------------------------
-   jp_bgc        =  25
+   jp_bgc        =  44
 !
    ln_pisces     =  .true.
    ln_my_trc     =  .false.
@@ -47,7 +47,26 @@
    sn_tracer(22)  = 'DCHL    ' , 'Diatoms chlorophyl Concentration       ',  'mol-C/L' ,  .false.
    sn_tracer(23)  = 'NO3     ' , 'Nitrates Concentration                 ',  'mol-C/L' ,  .true.
    sn_tracer(24)  = 'NH4     ' , 'Ammonium Concentration                 ',  'mol-C/L' ,  .false.
-   sn_tracer(25)  = 'LGW     ' , 'Ligand Concentration                 ',  'mol-C/L' ,  .false.    ,  .true.
+   sn_tracer(25)  = 'DON     ' , 'Dissolved Organic N Concentration      ',  'mol-C/L' ,  .false.    ,  .true.
+   sn_tracer(26)  = 'DOP     ' , 'Dissolved Organic P Concentration      ',  'mol-C/L' ,  .false.    ,  .true.
+   sn_tracer(27)  = 'PON     ' , 'Small PON Concentration     ',  'mol-C/L' ,  .false.    ,  .true.
+   sn_tracer(28)  = 'POP     ' , 'Small POP Concentration     ',  'mol-C/L' ,  .false.    ,  .true.
+   sn_tracer(29)  = 'PHYN    ' , 'PHYN Concentration  ',  'mol-C/L' ,  .false.    ,  .true.
+   sn_tracer(30)  = 'PHYP    ' , 'PHYN Concentration  ',  'mol-C/L' ,  .false.    ,  .true.
+   sn_tracer(31)  = 'DIAN    ' , 'PHYN Concentration  ',  'mol-C/L' ,  .false.    ,  .true.
+   sn_tracer(32)  = 'DIAP    ' , 'PHYN Concentration  ',  'mol-C/L' ,  .false.    ,  .true.
+   sn_tracer(33)  = 'PIC    ' , 'PICO Concentration  ',  'mol-C/L' ,  .false.    ,  .true.
+   sn_tracer(34)  = 'PICN    ' , 'PICO N Concentration        ',  'mol-C/L' ,  .false.    ,  .true.
+   sn_tracer(35)  = 'PICP    ' , 'PICO P Concentration        ',  'mol-C/L' ,  .false.    ,  .true.
+   sn_tracer(36)  = 'PFe    ' , 'PICO Fe Concentration        ',  'mol-C/L' ,  .false.    ,  .true.
+   sn_tracer(37)  = 'PCHL    ' , 'PICO Chl Concentration      ',  'mol-C/L' ,  .false.    ,  .true.
+   sn_tracer(38)  = 'GON     ' , 'Big PON Concentration       ',  'mol-C/L' ,  .false.    ,  .true.
+   sn_tracer(39)  = 'GOP     ' , 'Big POP Concentration       ',  'mol-C/L' ,  .false.    ,  .true.
+   sn_tracer(40)  = 'LGW     ' , 'Ligand Concentration        ',  'mol-C/L' ,  .false.    ,  .true.
+   sn_tracer(41)  = 'LFe     ' , 'Lithogenic Fe from dust    ',  'mol-Feeq/L' ,  .false.    ,  .true.
+   sn_tracer(42)  = 'LFea    ' , 'Lithogenic Fe aggregates from dust    ',  'mol-Feeq/L' ,  .false.    ,  .true.
+   sn_tracer(43)  = 'AFes    ' , 'Authigenic Fe small    ',  'mol-Fe/L' ,  .false.
+   sn_tracer(44)  = 'AFeb    ' , 'Authigenic Fe big    ',  'mol-Fe/L' ,  .false.
 /
 !-----------------------------------------------------------------------
 &namage          !   AGE 

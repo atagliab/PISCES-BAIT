@@ -17,6 +17,8 @@
   ln_p5z    = .true.         !  PISCES QUOTA model used
   ln_ligand = .true.        !  Enable  organic ligands
   ln_sediment = .false.      !  Enable sediment module
+  ln_bait   = .true.        ! Enable new iron module
+  ln_feauth  = .true.        ! Enable authigenic Fe iron
 /
 !-----------------------------------------------------------------------
 &nampisext     !   air-sea exchange
@@ -53,11 +55,23 @@
    wsbio2scale =  5000.   ! Big particles length scale of sinking
 !                         !  ln_ligand enabled
    ldocp       =  1.E-4   ! Phyto ligand production per unit doc 
-   ldocz       =  1.E-4   ! Zoo ligand production per unit doc 
+   ldocz       =  1.E-5   ! Zoo ligand production per unit doc 
    lthet       =  1.0     ! Proportional loss of ligands due to Fe uptake 
 !                         !  ln_p5z enabled
    no3rat3     =  0.151   ! N/C ratio in zooplankton
    po4rat3     =  0.00944 ! P/C ratio in zooplankton
+!                            ln_bait enabled
+   ragglfe     =  2.6E-2  ! aggregation of LFe ((mg/m3)-1 d-1)
+   aggrat      =  0.25      ! scaling factor for aggregation with organics
+   rdislfea    =  25      ! dissagregation of LFe aggregates (d-1)
+      wslfe    =  0.5      ! sinking speed of lithogenic Fe dust (m d-1)
+      wslfea   =  10.     ! sinking speed of lithogenic Fe dust aggregates (m d-1)
+   wslfeamax   =  15.     ! max sinking speed of lithogenic Fe dust aggregates (m d-1)
+     cfeagg    =  2.E-2   ! aggregation rate of small authigenic Fe due to afes (s-1)
+     cfeagg2    =  5.E-4   ! aggregation rate of small authigenic Fe due to afeb (s-1)
+     wsafes    =  0.5      ! sinking speed of small authigenic Fe (m d-1)
+     wsafeb    =  10.     ! sinking speed of large authigenic Fe (m d-1)
+   wsafebmax   =  10.     ! maximum sinking speed of large authigenic Fe (m d-1)
 /
 !-----------------------------------------------------------------------
 &namp4zlim     !   parameters for nutrient limitations for PISCES std  - ln_p4z
@@ -178,6 +192,14 @@
    thetandm   =  0.4      ! Maximum Chl/N in diatoms
    chlcmin    =  0.003    ! Minimum Chl/c in phytoplankton
    grosip     =  0.12     ! mean Si/C ratio
+!  ln_bait
+   qfemaxn     = 40.E-6    ! luxury uptake of Fe
+   kqfemaxn    =  2.E-9    ! dFe shapefunction for qfemax
+   qfemaxp     = 40.E-6    ! luxury uptake of Fe
+   kqfemaxp    =  2.E-9    ! dFe shapefunction for qfemax
+   qfemaxd     = 40.E-6    ! luxury uptake of Fe
+   kqfemaxd    =  2.E-9    ! dFe shapefunction for qfemax
+   ln_felig    = .true.    ! ligand production enhanced under felimitation
 /
 !-----------------------------------------------------------------------
 &namp4zmort    !   parameters for phytoplankton sinks for PISCES std   - ln_p4z
@@ -313,11 +335,30 @@
 &nampisfer     !   parameters for iron chemistry
 !-----------------------------------------------------------------------
    ln_ligvar =  .false.   ! variable ligand concentration
+   ln_ltonly =  .true.  ! if ln_ligvar=T then use DOC to drive LT?
+   docl      =  0.09     ! Lt:DOC ratio
+   ln_fixlogk = .true.   ! fix logK
+   logk2      =  12        ! logK for L2 ligand
    xlam1     =  0.05      ! scavenging rate of Iron by biogenic particles
    xlamdust  =  150.0     ! Scavenging rate of Iron by dust
-   ligand    =  1E-9     ! Ligands concentration 
+   ligand    =  1E-9      ! Ligands concentration 
    kfep      =  0.01      ! Nanoparticle formation rate constant
    scaveff   =  1.0       ! Fraction of scavenged Fe that goes to POFe
+!  ln_bait
+   xlamdust1 =  750.0     ! Scavenging rate of Iron by lfe (1/(g/L)) 
+   xlamdust2 =  150.0     ! Scavenging rate of Iron by lfe aggregates (1/(g/L))
+   xlamafe1 =  750.0     ! Scavenging rate of Iron by small authigeninc pFe (1/(g/L))
+   xlamafe2 =  150.0     ! Scavenging rate of Iron by large authigenic pFe (1/(g/L))
+   ln_dyncol = .true.     ! Dynamic calculation of colloidal Fe (between 10-90% of dFe)
+   mincolfe  = 0.1        ! min colloidal Fe fraction of FeL
+   collf     = 10.         ! factor modulation of colloidal aggregation rate (default = 1)
+   kcfe      = 2.5E-9      ! shapefunction for cFe aggregation
+   ln_l1l2   = .false.     ! do we account for L1, L2 and DOC/PH
+   l2_min    = 0.6E-9     ! Concentration of L2 ligands mol/L
+   ln_nocfel = .true.     ! do not have colloidal ligands
+    kbcfe    = 3.E-8     ! shape function for control of cFe agg by bio
+    coagf    = 3.        ! factor modulation of upper ocean cFe coagulation
+    clgw     = 0.1       ! fraction of ligands that undergo coagulation loss (if ln_nocfel=T)
 /
 !-----------------------------------------------------------------------  
 &nampisrem     !   parameters for remineralization
@@ -339,10 +380,17 @@
    xremip    =  0.035     ! remineralisation rate of POC
    jcpoc     =  15        ! Number of lability classes
    rshape    =  1.0       ! Shape of the gamma function
+   ln_dustrfe = .false.   ! modulate iron remin by dust
+   kdust     =  1.E-6     ! shape of dust reminfe function
+   ln_litho  = .false.     ! does lithogenic size spectrum operate on zdust
+   remfe     = 1.        ! effective remin of organic Fe
 !                         ! ln_p5z
    xremipc   =  0.028     ! remineralisation rate of POC
    xremipn   =  0.03      ! remineralisation rate of PON
    xremipp   =  0.035     ! remineralisation rate of POP
+!                         ! ln_feauth & ln_bait
+   xremafs   =  1.E-4    ! relative lability of small authigenic Fe
+   xremafb   =  5.E-4     ! relative lability of big authigenic Fe
 /
 !-----------------------------------------------------------------------
 &nampiscal     !   parameters for Calcite chemistry
@@ -355,7 +403,8 @@
 !-----------------------------------------------------------------------
 !              !  file name        ! frequency (hours) ! variable      ! time interp. !  clim  ! 'yearly'/ ! weights  ! rotation ! land/sea mask !
 !              !                   !  (if <0  months)  !   name        !   (logical)  !  (T/F) ! 'monthly' ! filename ! pairing  ! filename      !
-   sn_dust     = 'dust.orca'       ,     -1.           , 'dust'        ,  .true.      , .true. , 'yearly'  , ''       , ''    , ''
+   sn_dust     = 'CESM2CAM6-MIMI_1980-2015_Dust_MonthlyDep_Hamiltonetal2020_ORCA2'       ,     -1.           , 'dust'        ,  .true.      , .true. , 'yearly'  , ''       , ''    , ''
+   sn_solfe     = 'CESM2CAM6-MIMI_1980-2015_SolFe_DustFireAnth_MonthlyDep_Hamiltonetal2020_ORCA2'       ,     -1.           , 'dust'        ,  .true.      , .true. , 'yearly'  , ''       , ''    , ''
    sn_solub    = 'solubility.orca' ,    -12.           , 'solubility1' ,  .false.     , .true. , 'yearly'  , ''       , ''    , ''
    sn_riverdic = 'river.orca'      ,    120.           , 'riverdic'    ,  .true.      , .true. , 'yearly'  , ''       , ''    , ''
    sn_riverdoc = 'river.orca'      ,    120.           , 'riverdoc'    ,  .true.      , .true. , 'yearly'  , ''       , ''    , ''
@@ -368,17 +417,20 @@
    sn_ironsed  = 'bathy.orca'      ,    -12.           , 'bathy'       ,  .false.     , .true. , 'yearly'  , ''       , ''    , ''
    sn_hydrofe  = 'hydrofe.orca'    ,    -12.           , 'epsdb'       ,  .false.     , .true. , 'yearly'  , ''       , ''    , ''
 !
+   sn_sticky  =  'proport_aggreg_doc'    ,    -12.           , 'PROPORT_SL'       ,  .false.     , .true. , 'yearly'  , ''       , ''    , ''
+!
    cn_dir      = './'      !  root directory for the location of the dynamical files
    ln_dust     =  .true.   ! boolean for dust input from the atmosphere
-   ln_solub    =  .true.   ! boolean for variable solubility of atm. Iron
+   ln_solub    =  .false.   ! boolean for variable solubility of atm. Iron
    ln_river    =  .true.   ! boolean for river input of nutrients
    ln_ndepo    =  .true.   ! boolean for atmospheric deposition of N
    ln_ironsed  =  .true.   ! boolean for Fe input from sediments
    ln_ironice  =  .true.   ! boolean for Fe input from sea ice
    ln_hydrofe  =  .true.   ! boolean for from hydrothermal vents
+   ln_sticky   =  .false.   ! Use stickiness of DOC
    sedfeinput  =  2.e-9    ! Coastal release of Iron
    distcoast   =  5.e3     ! Distance off the coast for Iron from sediments
-   dustsolub   =  0.02     ! Solubility of the dusta
+   dustsolub   =  1.     ! Solubility of the dusta
    mfrac       =  0.035    ! Fe mineral fraction of dust
    wdust       =  2.0      ! Dust sinking speed 
    icefeinput  =  15.e-9   ! Iron concentration in sea ice
@@ -388,15 +440,22 @@
    hratio      =  1.e+7    ! Fe to 3He ratio assumed for vent iron supply 
 !                          ! ln_ligand
    lgw_rath    =  0.5      ! Weak ligand ratio from sed hydro sources 
+!                          ! ln_bait
+   sollfe      =  0.001     ! solubility of lithogenic Fe (proportion)
+   tsollfe     =  365.     ! timescale for solubility (years)
+      flfe     =  1.      ! Fraction of mineral dust to fine fraction
+   lgw_ratd    =  0.      ! Weak ligand ratio from dust
 /
 !-----------------------------------------------------------------------
 &nampislig     !   Namelist parameters for ligands, nampislig
 !-----------------------------------------------------------------------
-   rlgw        =  200.     ! Lifetime (years) of weak ligands
-   rlig        =  1.E-4    ! Remin ligand production per unit C
-   prlgw       =  5.E-4    ! Photolysis of weak ligand
-   rlgs        =  1.       ! Lifetime (years) of strong ligands
+   rlgw        =  100.     ! Lifetime (years) of weak ligands
+   rlig        =  5.E-5    ! Remin ligand production per unit C
+   prlgw       =  1.E-4    ! Photolysis of weak ligand
+   rlgs        =  0.2       ! Lifetime (years) of strong ligands
+   lfun        =  -2       ! shape for ligand continuum
    xklig       =  1.E-9    ! 1/2 saturation constant of photolysis
+   ln_ligrem   =  .false.   ! dynamic ligand lability
 /
 !-----------------------------------------------------------------------
 &nampisice     !   Prescribed sea ice tracers

@@ -201,7 +201,8 @@ CONTAINS
       !!
       NAMELIST/nampisbio/ nrdttrc, wsbio, xkmort, feratz, feratm, wsbio2, wsbio2max,    &
          &                wsbio2scale, ldocp, ldocz, lthet, no3rat3, po4rat3, &
-         &                ragglfe, aggrat, rdislfea, wslfe, wslfea, wslfeamax
+         &                ragglfe, aggrat, rdislfea, wslfe, wslfea, wslfeamax, cfeagg, cfeagg2, &
+         &                wsafes, wsafeb, wsafebmax
          !
       NAMELIST/nampisdmp/ ln_pisdmp, nn_pisdmp
       NAMELIST/nampismass/ ln_check_mass
@@ -244,6 +245,8 @@ CONTAINS
          ENDIF
          IF( ln_bait ) THEN
                WRITE(numout,*) '   aggregation of LFe((mg/m3)-1/d-1)               ragglfe =',ragglfe
+               WRITE(numout,*) ' agggregation of small authigenic Fe (s-1)        acfeagg=',cfeagg
+               WRITE(numout,*) ' agggregation of small authigenic Fe catalysed by afeb (s-1)      acfeagg2=',cfeagg2
          ENDIF
       ENDIF
 

@@ -23,6 +23,7 @@ MODULE sms_pisces
    LOGICAL  ::  ln_ligand         !: Flag to enable organic ligands
    LOGICAL  ::  ln_sediment       !: Flag to enable sediment module
    LOGICAL  ::  ln_bait           !: Flag to enable new bait Fe module
+   LOGICAL  ::  ln_feauth         !: Flag to enable authigenic Fe pools
 
    !!*  Time variables
    INTEGER  ::   nrdttrc          !: ???
@@ -56,6 +57,11 @@ MODULE sms_pisces
    REAL(wp) ::   wslfe            !: lfe sinking rate
    REAL(wp) ::   wslfea           !: lfea sinking rate
    REAL(wp) ::   wslfeamax        !: lfea max sinking rate
+   REAL(wp) ::   cfeagg        !: aggregation of small authigenic Fe
+   REAL(wp) ::   cfeagg2        !: aggregation of small authigenic Fe mediated by  big afe
+   REAL(wp) ::   wsafes
+   REAL(wp) ::   wsafeb
+   REAL(wp) ::   wsafebmax
    !!*  diagnostic parameters 
    REAL(wp) ::  tpp               !: total primary production
    REAL(wp) ::  t_oce_co2_exp     !: total carbon export
@@ -96,6 +102,8 @@ MODULE sms_pisces
 
    REAL(wp), ALLOCATABLE, SAVE, DIMENSION(:,:,:) ::   wsbio5   !: POC sinking speed
    REAL(wp), ALLOCATABLE, SAVE, DIMENSION(:,:,:) ::   wsbio6   !: GOC sinking speed
+   REAL(wp), ALLOCATABLE, SAVE, DIMENSION(:,:,:) ::   wsbio7   !: POC sinking
+   REAL(wp), ALLOCATABLE, SAVE, DIMENSION(:,:,:) ::   wsbio8   !: GOC sinking
 
    REAL(wp), ALLOCATABLE, SAVE, DIMENSION(:,:,:) ::   xfracal    !: Fraction of nanophytoplankton that are calcifying organisms
    REAL(wp), ALLOCATABLE, SAVE, DIMENSION(:,:,:) ::   nitrfac    !: OMZ 
@@ -194,6 +202,9 @@ CONTAINS
       ENDIF
       IF( ln_bait ) THEN
          ALLOCATE( wsbio5(jpi,jpj,jpk)   , wsbio6(jpi,jpj,jpk) ,   STAT=ierr(12))
+      ENDIF
+      IF( ln_feauth ) THEN
+         ALLOCATE( wsbio7(jpi,jpj,jpk)   , wsbio8(jpi,jpj,jpk) , STAT=ierr(13))
       ENDIF
       !
       sms_pisces_alloc = MAXVAL( ierr )

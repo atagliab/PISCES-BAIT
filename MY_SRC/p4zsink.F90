@@ -40,6 +40,8 @@ MODULE p4zsink
    REAL(wp), PUBLIC, ALLOCATABLE, SAVE, DIMENSION(:,:,:) ::   sinkfer2           !: Big iron sinking fluxes
    REAL(wp), PUBLIC, ALLOCATABLE, SAVE, DIMENSION(:,:,:) ::   sinklfe
    REAL(wp), PUBLIC, ALLOCATABLE, SAVE, DIMENSION(:,:,:) ::   sinklfa
+   REAL(wp), PUBLIC, ALLOCATABLE, SAVE, DIMENSION(:,:,:) ::   sinkafs
+   REAL(wp), PUBLIC, ALLOCATABLE, SAVE, DIMENSION(:,:,:) ::   sinkafb
    INTEGER  :: ik100
 
    !!----------------------------------------------------------------------
@@ -132,13 +134,33 @@ CONTAINS
       END DO
       sinklfe (:,:,:) = 0.e0
       sinklfa (:,:,:) = 0.e0
+      IF ( ln_feauth ) THEN
+      sinkafs (:,:,:) = 0.e0
+      sinkafb (:,:,:) = 0.e0
+      ENDIF ! IF ( ln_feauth ) THEN
 
       ! Compute the sedimentation term using trc_sink for all the sinking
       ! particles
       ! ---------------------------------------------------------------------------
       CALL trc_sink( kt, wsbio5, sinklfe , jplfe, rfact2 )
       CALL trc_sink( kt, wsbio6, sinklfa , jplfa, rfact2 )
-      ENDIF
+      IF ( ln_feauth ) THEN
+      wsbio7(:,:,:) = wsafes
+
+      DO jk = 1, jpkm1
+         DO jj = 1, jpj
+            DO ji = 1,jpi
+               zmax  = MAX( heup_01(ji,jj), hmld(ji,jj) )
+               zfact = MAX( 0., gdepw_n(ji,jj,jk+1) - zmax ) / wsbio2scale
+               wsbio8(ji,jj,jk) = wsafeb + MAX(0., ( wsafebmax - wsafeb )) * zfact
+            END DO
+         END DO
+      END DO
+
+      CALL trc_sink( kt, wsbio7, sinkafs , jpafs, rfact2 )
+      CALL trc_sink( kt, wsbio8, sinkafb , jpafb, rfact2 )
+      ENDIF ! IF ( ln_feauth ) THEN
+      ENDIF ! IF( ln_bait ) THEN 
 
       ! PISCES-QUOTA part
       IF( ln_p5z ) THEN
@@ -263,7 +285,8 @@ CONTAINS
       IF( ln_p5z    ) ALLOCATE( sinkingn(jpi,jpj,jpk), sinking2n(jpi,jpj,jpk)   ,     &
          &                      sinkingp(jpi,jpj,jpk), sinking2p(jpi,jpj,jpk)   , STAT=ierr(2) )
       !
-      IF( ln_bait  ) ALLOCATE( sinklfe(jpi,jpj,jpk) , sinklfa(jpi,jpj,jpk)       , STAT=ierr(3) )
+      IF( ln_bait  ) ALLOCATE( sinklfe(jpi,jpj,jpk) , sinklfa(jpi,jpj,jpk)       ,   &
+         &                     sinkafs(jpi,jpj,jpk) , sinkafb(jpi,jpj,jpk)      , STAT=ierr(3) )
       p4z_sink_alloc = MAXVAL( ierr )
       IF( p4z_sink_alloc /= 0 ) CALL ctl_stop( 'STOP', 'p4z_sink_alloc : failed to allocate arrays.' )
       !

@@ -111,6 +111,18 @@ CONTAINS
                   tra(ji,jj,jk,jpbfe) = tra(ji,jj,jk,jpbfe) + zaggfe
                   tra(ji,jj,jk,jpdoc) = tra(ji,jj,jk,jpdoc) - zaggdoc - zaggdoc2 - zaggdoc3
                   !
+                  IF (ln_bait .AND. ln_feauth ) THEN
+      ! aggregation of small authigenic Fe into big authigenic Fe
+                  tra(ji,jj,jk,jpafs) = tra(ji,jj,jk,jpafs) - zagg * ( trb(ji,jj,jk,jpafs) / ( trb(ji,jj,jk,jppoc) + rtrn ) )
+                  tra(ji,jj,jk,jpafb) = tra(ji,jj,jk,jpafb) + zagg * ( trb(ji,jj,jk,jpafs) / ( trb(ji,jj,jk,jppoc) + rtrn ) )
+      ! (2) autocatalytic
+!                  tra(ji,jj,jk,jpafs) = tra(ji,jj,jk,jpafs) - cfeagg * trb(ji,jj,jk,jpafs) * zfact
+!                  tra(ji,jj,jk,jpafb) = tra(ji,jj,jk,jpafb) + cfeagg * trb(ji,jj,jk,jpafs) * zfact
+                  tra(ji,jj,jk,jpafs) = tra(ji,jj,jk,jpafs) - ( cfeagg * trb(ji,jj,jk,jpafs) * zfact ) &
+                  &                   - ( cfeagg2 * trb(ji,jj,jk,jpafb) * xstep )
+                  tra(ji,jj,jk,jpafb) = tra(ji,jj,jk,jpafb) + ( cfeagg * trb(ji,jj,jk,jpafs) * zfact ) &
+                  &                   + ( cfeagg2 * trb(ji,jj,jk,jpafb) * xstep ) 
+                 ENDIF
                   conspoc(ji,jj,jk) = conspoc(ji,jj,jk) - zagg + zaggdoc + zaggdoc3
                   prodgoc(ji,jj,jk) = prodgoc(ji,jj,jk) + zagg + zaggdoc2
                   !
@@ -185,6 +197,19 @@ CONTAINS
                   tra(ji,jj,jk,jpdoc) = tra(ji,jj,jk,jpdoc) - zaggdoc - zaggdoc2 - zaggdoc3
                   tra(ji,jj,jk,jpdon) = tra(ji,jj,jk,jpdon) - zaggdon - zaggdon2 - zaggdon3
                   tra(ji,jj,jk,jpdop) = tra(ji,jj,jk,jpdop) - zaggdop - zaggdop2 - zaggdop3
+                  IF (ln_bait .AND. ln_feauth ) THEN
+      ! aggregation of small authigenic Fe into big authigenic Fe
+      ! (1) catalysed by organic matter
+                  tra(ji,jj,jk,jpafs) = tra(ji,jj,jk,jpafs) - zaggpoc * ( trb(ji,jj,jk,jpafs) / ( trb(ji,jj,jk,jppoc) + rtrn ) )
+                  tra(ji,jj,jk,jpafb) = tra(ji,jj,jk,jpafb) + zaggpoc * ( trb(ji,jj,jk,jpafs) / ( trb(ji,jj,jk,jppoc) + rtrn ) )
+      ! (2) autocatalytic
+!                  tra(ji,jj,jk,jpafs) = tra(ji,jj,jk,jpafs) - cfeagg * trb(ji,jj,jk,jpafs) * zfact
+!                  tra(ji,jj,jk,jpafb) = tra(ji,jj,jk,jpafb) + cfeagg * trb(ji,jj,jk,jpafs) * zfact
+                  tra(ji,jj,jk,jpafs) = tra(ji,jj,jk,jpafs) - ( cfeagg * trb(ji,jj,jk,jpafs) * zfact ) &
+                  &                   - ( cfeagg2  * trb(ji,jj,jk,jpafb) * xstep )
+                  tra(ji,jj,jk,jpafb) = tra(ji,jj,jk,jpafb) + ( cfeagg * trb(ji,jj,jk,jpafs) * zfact ) &
+                  &                   + ( cfeagg2  * trb(ji,jj,jk,jpafb) * xstep )
+                  ENDIF
                   !
                   conspoc(ji,jj,jk) = conspoc(ji,jj,jk) - zaggpoc + zaggdoc + zaggdoc3
                   prodgoc(ji,jj,jk) = prodgoc(ji,jj,jk) + zaggpoc + zaggdoc2

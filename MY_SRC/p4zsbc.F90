@@ -26,6 +26,7 @@ MODULE p4zsbc
    LOGICAL , PUBLIC ::   ln_ndepo     !: boolean for atmospheric deposition of N
    LOGICAL , PUBLIC ::   ln_ironsed   !: boolean for Fe input from sediments
    LOGICAL , PUBLIC ::   ln_hydrofe   !: boolean for Fe input from hydrothermal vents
+   LOGICAL , PUBLIC ::   ln_sticky    !: read in DOC stickiness
    REAL(wp), PUBLIC ::   sedfeinput   !: Coastal release of Iron
    REAL(wp), PUBLIC ::   dustsolub    !: Solubility of the dust
    REAL(wp), PUBLIC ::   mfrac        !: Mineral Content of the dust
@@ -61,6 +62,7 @@ MODULE p4zsbc
    TYPE(FLD), ALLOCATABLE, DIMENSION(:) ::   sf_ndepo     ! structure of input nitrogen deposition
    TYPE(FLD), ALLOCATABLE, DIMENSION(:) ::   sf_ironsed   ! structure of input iron from sediment
    TYPE(FLD), ALLOCATABLE, DIMENSION(:) ::   sf_hydrofe   ! structure of input iron from hydrothermal vents
+   TYPE(FLD), ALLOCATABLE, DIMENSION(:) ::   sf_sticky
 
    INTEGER , PARAMETER ::   nbtimes = 365                          ! maximum number of times record in a file
    INTEGER             ::   ntimes_dust, ntimes_riv, ntimes_ndep   ! number of time steps in a file
@@ -77,7 +79,7 @@ MODULE p4zsbc
    REAL(wp), PUBLIC, ALLOCATABLE, SAVE, DIMENSION(:,:)   ::   nitdep           !: atmospheric N deposition 
    REAL(wp), PUBLIC, ALLOCATABLE, SAVE, DIMENSION(:,:,:) ::   ironsed          !: Coastal supply of iron
    REAL(wp), PUBLIC, ALLOCATABLE, SAVE, DIMENSION(:,:,:) ::   hydrofe          !: Hydrothermal vent supply of iron
-
+   REAL(wp), PUBLIC, ALLOCATABLE, SAVE, DIMENSION(:,:,:) ::   sticky
    REAL(wp), PUBLIC :: sedsilfrac, sedcalfrac
    REAL(wp), PUBLIC :: rivalkinput, rivdicinput
    REAL(wp), PUBLIC :: rivdininput, rivdipinput, rivdsiinput
@@ -218,7 +220,7 @@ CONTAINS
       !!----------------------------------------------------------------------
       INTEGER  :: ji, jj, jk, jm, ifpr
       INTEGER  :: ii0, ii1, ij0, ij1
-      INTEGER  :: numdust, numsolub, numriv, numiron, numdepo, numhydro, numsolfe
+      INTEGER  :: numdust, numsolub, numriv, numiron, numdepo, numhydro, numsolfe, numsticky
       INTEGER  :: ierr, ierr1, ierr2, ierr3
       INTEGER  :: ios                 ! Local integer output status for namelist read
       INTEGER  :: ik50                !  last level where depth less than 50 m
@@ -230,13 +232,13 @@ CONTAINS
       !
       CHARACTER(len=100) ::  cn_dir          ! Root directory for location of ssr files
       TYPE(FLD_N), DIMENSION(jpriv) ::  slf_river    ! array of namelist informations on the fields to read
-      TYPE(FLD_N) ::   sn_dust, sn_solub, sn_ndepo, sn_ironsed, sn_hydrofe, sn_solfe   ! informations about the fields to be read
+      TYPE(FLD_N) ::   sn_dust, sn_solub, sn_ndepo, sn_ironsed, sn_hydrofe, sn_solfe, sn_sticky   ! informations about the fields to be read
       TYPE(FLD_N) ::   sn_riverdoc, sn_riverdic, sn_riverdsi   ! informations about the fields to be read
       TYPE(FLD_N) ::   sn_riverdin, sn_riverdon, sn_riverdip, sn_riverdop
       !!
       NAMELIST/nampissbc/cn_dir, sn_dust, sn_solfe, sn_solub, sn_riverdic, sn_riverdoc, sn_riverdin, sn_riverdon,     &
-        &                sn_riverdip, sn_riverdop, sn_riverdsi, sn_ndepo, sn_ironsed, sn_hydrofe, &
-        &                ln_dust, ln_solub, ln_river, ln_ndepo, ln_ironsed, ln_ironice, ln_hydrofe,    &
+        &                sn_riverdip, sn_riverdop, sn_riverdsi, sn_ndepo, sn_ironsed, sn_hydrofe, sn_sticky, &
+        &                ln_dust, ln_solub, ln_river, ln_ndepo, ln_ironsed, ln_ironice, ln_hydrofe, ln_sticky,    &
         &                sedfeinput, distcoast, dustsolub, icefeinput, wdust, mfrac, nitrfix, diazolight, concfediaz, &
         &                hratio, lgw_rath, sollfe, tsollfe, flfe, lgw_ratd
       !!----------------------------------------------------------------------
@@ -264,6 +266,7 @@ CONTAINS
          WRITE(numout,*) '      Fe input from sediments                  ln_ironsed  = ', ln_ironsed
          WRITE(numout,*) '      Fe input from seaice                     ln_ironice  = ', ln_ironice
          WRITE(numout,*) '      fe input from hydrothermal vents         ln_hydrofe  = ', ln_hydrofe
+         WRITE(numout,*) '      dynamic DOC stickiness                   ln_sticky =', ln_sticky
          WRITE(numout,*) '      coastal release of iron                  sedfeinput  = ', sedfeinput
          WRITE(numout,*) '      distance off the coast                   distcoast   = ', distcoast
          WRITE(numout,*) '      solubility of the dust                   dustsolub   = ', dustsolub
@@ -334,7 +337,7 @@ CONTAINS
          IF( Agrif_Root() ) THEN   !  Only on the master grid
             ! Get total input dust ; need to compute total atmospheric supply of
             ! Si in a year
-            CALL iom_open (  TRIM( sn_solfe%clname ) , numdust )
+            CALL iom_open (  TRIM( sn_solfe%clname ) , numsolfe )
             ntimes_solfe = iom_getszuld( numsolfe )   ! get number of record in file
          END IF
       END IF
@@ -513,6 +516,31 @@ CONTAINS
          ENDDO
          !
       ENDIF
+
+      !
+      ! DOC stickiness
+      ! ------------------------
+      IF( ln_sticky ) THEN
+         IF(lwp) WRITE(numout,*)
+         IF(lwp) WRITE(numout,*) '   ==>>>   ln_sticky=T , DOC stickiness'
+         !
+         ALLOCATE( sticky(jpi,jpj,jpk) )    ! allocation
+         !
+         CALL iom_open ( TRIM( sn_sticky%clname ), numsticky )
+         CALL iom_get  ( numsticky, jpdom_data, TRIM( sn_sticky%clvar ), sticky(:,:,:), 1 )
+         CALL iom_close( numsticky )
+         !
+         DO jk = 1, jpk
+            sticky(:,:,jk) = min( 1., ( sticky(:,:,jk) * (1/0.24875) ) ) ! to give max 1.
+         ENDDO
+         !
+       ELSE
+         ALLOCATE( sticky(jpi,jpj,jpk) )    ! allocation
+         DO jk = 1, jpk
+            sticky(:,:,jk) = 0.3
+         ENDDO
+      ENDIF
+
       ! 
       IF( ll_sbc ) CALL p4z_sbc( nit000 ) 
       !

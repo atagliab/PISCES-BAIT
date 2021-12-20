@@ -71,6 +71,7 @@ CONTAINS
       CHARACTER (len=25) :: charout
       REAL(wp), DIMENSION(jpi,jpj    ) :: zdenit2d, zbureff, zwork
       REAL(wp), DIMENSION(jpi,jpj    ) :: zwsbio3, zwsbio4
+      REAL(wp), DIMENSION(jpi,jpj    ) :: zwsbio5, zwsbio6,  zwsbio7, zwsbio8
       REAL(wp), DIMENSION(jpi,jpj    ) :: zsedcal, zsedsi, zsedc
       REAL(wp), DIMENSION(jpi,jpj,jpk) :: zsoufer, zlight, ztrfer
       REAL(wp), ALLOCATABLE, DIMENSION(:,:,:) :: ztrpo4, ztrdop, zirondep, zpdep, zsidep
@@ -146,8 +147,9 @@ CONTAINS
          ! ------------------------------------------------------------------
          IF( ln_bait ) THEN
          ! The bait model uses a combination of soluble Fe and dust inputs fromn
-         ! CESM2CAM6 model
-          zirondep(:,:,1) = solfe(:,:) * rfact2 / e3t_n(:,:,1) / 55.85 + 3.e-10 * r1_ryyss 
+         ! CESM2CAM6 model in kg/m2/s
+!          zirondep(:,:,1) = solfe(:,:) * rfact2 / e3t_n(:,:,1) / 55.85 + 3.e-10 * r1_ryyss 
+          zirondep(:,:,1) = solfe(:,:) * dustsolub * rfact2 / e3t_n(:,:,1) / 55.85 + 3.e-10 * r1_ryyss
          ELSE
          IF( ln_solub ) THEN
             zirondep(:,:,1) = solub(:,:) * dust(:,:) * mfrac * rfact2 / e3t_n(:,:,1) / 55.85 + 3.e-10 * r1_ryyss 
@@ -300,6 +302,28 @@ CONTAINS
             zwsbio3(ji,jj) = MIN( 0.99 * zdep, wsbio3(ji,jj,ikt) )
          END DO
       END DO
+
+         IF( ln_bait ) THEN
+      DO jj = 1, jpj
+         DO ji = 1, jpi
+            ikt  = mbkt(ji,jj)
+            zdep = e3t_n(ji,jj,ikt) / xstep
+            zwsbio6(ji,jj) = MIN( 0.99 * zdep, wsbio6(ji,jj,ikt) )
+            zwsbio5(ji,jj) = MIN( 0.99 * zdep, wsbio5(ji,jj,ikt) )
+         END DO
+      END DO
+          ENDIF
+
+         IF( ln_feauth ) THEN
+      DO jj = 1, jpj
+         DO ji = 1, jpi
+            ikt  = mbkt(ji,jj)
+            zdep = e3t_n(ji,jj,ikt) / xstep
+            zwsbio8(ji,jj) = MIN( 0.99 * zdep, wsbio8(ji,jj,ikt) )
+            zwsbio7(ji,jj) = MIN( 0.99 * zdep, wsbio7(ji,jj,ikt) )
+         END DO
+      END DO
+          ENDIF
       !
       ! No sediment module activated
       IF( .NOT.lk_sed ) THEN
@@ -424,10 +448,16 @@ CONTAINS
          DO ji = 1, jpi
             ikt  = mbkt(ji,jj)
             zdep = xstep / e3t_n(ji,jj,ikt)
-            zws4 = zwsbio4(ji,jj) * zdep
-            zws3 = zwsbio3(ji,jj) * zdep
+            zws4 = zwsbio6(ji,jj) * zdep
+            zws3 = zwsbio5(ji,jj) * zdep
             tra(ji,jj,ikt,jplfe) = tra(ji,jj,ikt,jplfe) - trb(ji,jj,ikt,jplfe) * zws3
             tra(ji,jj,ikt,jplfa) = tra(ji,jj,ikt,jplfa) - trb(ji,jj,ikt,jplfa) * zws4
+      IF ( ln_feauth ) THEN
+            zws4 = zwsbio8(ji,jj) * zdep
+            zws3 = zwsbio7(ji,jj) * zdep
+            tra(ji,jj,ikt,jpafs) = tra(ji,jj,ikt,jpafs) - trb(ji,jj,ikt,jpafs) *zws3
+            tra(ji,jj,ikt,jpafb) = tra(ji,jj,ikt,jpafb) - trb(ji,jj,ikt,jpafb) * zws4
+      ENDIF
          END DO
       END DO
       ENDIF

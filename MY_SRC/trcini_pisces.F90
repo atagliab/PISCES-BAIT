@@ -177,6 +177,8 @@ CONTAINS
         IF( cltra == 'LGW'      )   jplgw = jn      !: Weak ligands
         IF( cltra == 'LFe'      )   jplfe = jn      !: Lithogenic Fe from dust
         IF( cltra == 'LFea'      )  jplfa = jn      !: Lithogenic Fe aggregates from dust
+        IF( cltra == 'AFes'      )  jpafs = jn      !: Small authigenic Fe
+        IF( cltra == 'AFeb'      )  jpafb = jn      !: Big authigenic Fe
       END DO
 
       CALL p4z_sms_init       !  Maint routine
@@ -214,7 +216,7 @@ CONTAINS
          trn(:,:,:,jpdia) = bioma0
          trn(:,:,:,jpzoo) = bioma0
          trn(:,:,:,jpmes) = bioma0
-         trn(:,:,:,jpfer) = 0.6E-9
+         trn(:,:,:,jpfer) = 0.4E-9
          trn(:,:,:,jpsfe) = bioma0 * 5.e-6
          trn(:,:,:,jpdfe) = bioma0 * 5.e-6
          trn(:,:,:,jpnfe) = bioma0 * 5.e-6
@@ -223,7 +225,7 @@ CONTAINS
          trn(:,:,:,jpno3) = no3
          trn(:,:,:,jpnh4) = bioma0
          IF( ln_ligand) THEN
-            trn(:,:,:,jplgw) = 0.6E-9
+            trn(:,:,:,jplgw) = 1.4E-9
          ENDIF
          IF( ln_p5z ) THEN
             trn(:,:,:,jpdon) = bioma0
@@ -245,6 +247,8 @@ CONTAINS
          IF( ln_bait) THEN
             trn(:,:,:,jplfe) = bioma0 * 1.e-6
             trn(:,:,:,jplfa) = bioma0 * 1.e-6
+            trn(:,:,:,jpafs) = bioma0 * 1.e-6
+            trn(:,:,:,jpafb) = bioma0 * 1.e-6
          ENDIF
          ! initialize the half saturation constant for silicate
          ! ----------------------------------------------------

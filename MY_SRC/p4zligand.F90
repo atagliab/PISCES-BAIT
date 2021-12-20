@@ -22,10 +22,12 @@ MODULE p4zligand
 
    REAL(wp), PUBLIC ::  rlgw     !: lifetime (years) of weak ligands
    REAL(wp), PUBLIC ::  rlgs     !: lifetime (years) of strong ligands
+   REAL(wp), PUBLIC ::  lfun
    REAL(wp), PUBLIC ::  rlig     !: Remin ligand production
    REAL(wp), PUBLIC ::  prlgw    !: Photochemical of weak ligand
    REAL(wp), PUBLIC ::  xklig    !: 1/2 saturation constant of photolysis
    LOGICAL          ::   ln_ligrem    !: boolean for dynamic lgw remin
+   LOGICAL          ::   ln_photo    !: boolean for dynamic lgw remin
    !!----------------------------------------------------------------------
    !! NEMO/TOP 4.0 , NEMO Consortium (2018)
    !! $Id: p4zligand.F90 12524 2020-03-09 13:42:03Z aumont $ 
@@ -78,17 +80,20 @@ CONTAINS
                ! decay of weak ligand
                ! This is based on the idea that as LGW is lower
                ! there is a larger fraction of refractory OM
-               zlgwr = max( rlgs , rlgw * exp( -2 * (trb(ji,jj,jk,jplgw)*1e9) ) ) ! years
-               zlgwr = 1. / zlgwr * tgfunc(ji,jj,jk) * ( xstep / nyear_len(1) ) * blim(ji,jj,jk) * trb(ji,jj,jk,jplgw)
+               zlgwr = max( rlgs , rlgw * exp( lfun * (trb(ji,jj,jk,jplgw)*1e9) ) ) ! years
+               zlgwr = 1. / zlgwr * tgfunc(ji,jj,jk) * ( xstep / nyear_len(1) ) * max( 0.1, blim(ji,jj,jk) ) * trb(ji,jj,jk,jplgw)
                ENDIF
                ! photochem loss of weak ligand
-!               zlgwpr = prlgw * xstep * etot(ji,jj,jk) * trb(ji,jj,jk,jplgw)**3 * (1. - fr_i(ji,jj))   &
-!               &        / ( trb(ji,jj,jk,jplgw)**2 + (xklig)**2)
+               if (ln_bait .AND. ln_photo ) THEN
                zlgwpr = prlgw * xstep * etot(ji,jj,jk) * lcom**3 * (1. - fr_i(ji,jj))   &
                &        / ( lcom**2 + (xklig)**2)
                zlgwpr2 = prlgw*10 * xstep * etot(ji,jj,jk) * lstar**3 * (1. - fr_i(ji,jj))   &
                &        / ( lstar**2 + (xklig/10)**2)
                zlgwpr = zlgwpr + zlgwpr2
+               ELSE
+               zlgwpr = prlgw * xstep * etot(ji,jj,jk) * trb(ji,jj,jk,jplgw)**3 * (1. - fr_i(ji,jj))   &
+               &        / ( trb(ji,jj,jk,jplgw)**2 + xklig**2)
+               ENDIF
                tra(ji,jj,jk,jplgw) = tra(ji,jj,jk,jplgw) + zlgwp - zlgwr - zlgwpr
                zligrem(ji,jj,jk)   = zlgwr
                zligpr(ji,jj,jk)    = zlgwpr
@@ -140,7 +145,7 @@ CONTAINS
       !!----------------------------------------------------------------------
       INTEGER ::   ios   ! Local integer 
       !
-      NAMELIST/nampislig/ rlgw, prlgw, rlgs, rlig, xklig, ln_ligrem
+      NAMELIST/nampislig/ rlgw, prlgw, rlgs, lfun, rlig, xklig, ln_ligrem, ln_photo
       !!----------------------------------------------------------------------
       !
       IF(lwp) THEN
@@ -165,6 +170,7 @@ CONTAINS
          WRITE(numout,*) '      1/2 saturation for photolysis                xklig =', xklig
       IF( ln_bait ) THEN
          WRITE(numout,*) ' extra remin rate for uncomplexed lgw?          ln_ligrem=',ln_ligrem
+         WRITE(numout,*) ' extra photoch rate for uncomplexed lgw? ln_photo=',ln_photo
       ENDIF
       ENDIF
       !

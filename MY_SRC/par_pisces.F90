@@ -57,6 +57,8 @@ MODULE par_pisces
    INTEGER, PUBLIC ::   jplgw     !: Weak Ligands
    INTEGER, PUBLIC ::   jplfe     !: Lithogenic Dust Fe
    INTEGER, PUBLIC ::   jplfa     !: Lithogenic Dust Fe aggregates
+   INTEGER, PUBLIC ::   jpafs     !: Small authigenic Fe
+   INTEGER, PUBLIC ::   jpafb     !: Big authigenic Fe
    !!---------------------------------------------------------------------
    !!   Default                                   No CFC geochemical model
    ! Starting/ending PISCES do-loop indices (N.B. no PISCES : jpl_pcs < jpf_pcs the do-loop are never done)

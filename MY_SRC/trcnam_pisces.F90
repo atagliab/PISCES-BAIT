@@ -44,7 +44,7 @@ CONTAINS
       INTEGER :: ios, ioptio         ! Local integer
       CHARACTER(LEN=20)::   clname
       !!
-      NAMELIST/nampismod/ln_p2z, ln_p4z, ln_p5z, ln_ligand, ln_sediment, ln_bait
+      NAMELIST/nampismod/ln_p2z, ln_p4z, ln_p5z, ln_ligand, ln_sediment, ln_bait, ln_feauth
       !!----------------------------------------------------------------------
 
       IF(lwp) WRITE(numout,*)
@@ -72,6 +72,7 @@ CONTAINS
          WRITE(numout,*) '      Flag to ligand                       ln_ligand   = ', ln_ligand
          WRITE(numout,*) '      Flag to use sediment                 ln_sediment = ', ln_sediment
          WRITE(numout,*) '      Flag to use BAIT Fe module           ln_bait     = ', ln_bait
+         WRITE(numout,*) '      Flag to use BAIT authigenic Fe module           ln_feauth  = ', ln_feauth
       ENDIF
       !
       IF(lwp) THEN                         ! control print
@@ -81,7 +82,8 @@ CONTAINS
          IF( ln_p2z      )  WRITE(numout,*) '   ==>>>   LOBSTER model is used'
          IF( ln_ligand )  WRITE(numout,*) '   ==>>>   Compute remineralization/dissolution of organic ligands'
          IF( ln_sediment )  WRITE(numout,*) '   ==>>>   Sediment module is used'
-         IF( ln_bait     )  WRITE(numout,*) '   ==>>> BAIT Fe module actibated'
+         IF( ln_bait     )  WRITE(numout,*) '   ==>>> BAIT Fe module activated'
+         IF( ln_feauth     )  WRITE(numout,*) '   ==>>> BAIT authigenic Fe module activated'
       ENDIF
     
       ioptio = 0

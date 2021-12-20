@@ -33,6 +33,8 @@ MODULE p4zpoc
    REAL(wp), PUBLIC ::   xremipc    !: remineralisation rate of DOC
    REAL(wp), PUBLIC ::   xremipn    !: remineralisation rate of DON
    REAL(wp), PUBLIC ::   xremipp    !: remineralisation rate of DOP
+   REAL(wp), PUBLIC ::   xremafs    !: remineralisation rate of small authigenic Fe
+   REAL(wp), PUBLIC ::   xremafb    !: remineralisation rate of big authigenic Fe
    INTEGER , PUBLIC ::   jcpoc      !: number of lability classes
    REAL(wp), PUBLIC ::   rshape     !: shape factor of the gamma distribution
    REAL(wp), PUBLIC ::   kdust      !:
@@ -73,6 +75,7 @@ CONTAINS
       REAL(wp) ::   zopon, zopop, zopoc, zopoc2, zopon2, zopop2
       REAL(wp) ::   zsizek, zsizek1, alphat, remint, solgoc, zpoc
       REAL(wp) ::   zofer2, zofer3
+      REAL(wp) ::   afe1, afe2
       REAL(wp) ::   zrfact2
       CHARACTER (len=25) :: charout
       REAL(wp), DIMENSION(jpi,jpj  )   :: totprod, totthick, totcons 
@@ -239,17 +242,16 @@ CONTAINS
                   zdust = ( trb(ji,jj,jk,jplfe) + trb(ji,jj,jk,jplfa) ) / 0.035 * 55.85
       IF ( ln_litho ) THEN
                   zdust = zdust * frac(ji,jj,jk)
-      ENDIF
+      ENDIF ! IF ( ln_litho ) THEN
       ELSE
                   zdust = dust(ji,jj) / ( wdust / rday ) * tmask(ji,jj,jk) &
                   &  * EXP( -gdept_n(ji,jj,jk) / 540. )
-      ENDIF
+      ENDIF ! IF ( ln_bait ) THEN
       IF ( ln_dustrfe ) THEN
                   zofer2 = zofer2 * ( 1. - ( zdust / ( zdust + kdust ) ) )
       ENDIF
                   zofer2 = zofer2 * remfe
                   zofer3 = zremig * solgoc * trb(ji,jj,jk,jpbfe)
-
                   ! update of the TRA arrays
                   tra(ji,jj,jk,jppoc) = tra(ji,jj,jk,jppoc) + zorem3(ji,jj,jk)
                   tra(ji,jj,jk,jpgoc) = tra(ji,jj,jk,jpgoc) - zorem2 - zorem3(ji,jj,jk)
@@ -310,6 +312,20 @@ CONTAINS
          END DO
       ENDIF
 
+     IF ( ln_bait .AND. ln_feauth ) THEN
+         DO jk = 1, jpkm1
+            DO jj = 1, jpj
+               DO ji = 1, jpi
+     ! remineralisation of authigenic Fe
+                  afe1 = trb(ji,jj,jk,jpafs) * xremafs * xstep 
+                  afe2 = trb(ji,jj,jk,jpafb) * xremafb * xstep 
+                  tra(ji,jj,jk,jpafs) = tra(ji,jj,jk,jpafs) - afe1 + afe2
+                  tra(ji,jj,jk,jpafb) = tra(ji,jj,jk,jpafb) - afe2
+                  tra(ji,jj,jk,jpfer) = tra(ji,jj,jk,jpfer) + afe1
+               END DO
+            END DO
+         END DO
+    ENDIF
      IF(ln_ctl)   THEN  ! print mean trends (used for debugging)
         WRITE(charout, FMT="('poc1')")
         CALL prt_ctl_trc_info(charout)
@@ -575,7 +591,7 @@ CONTAINS
       REAL(wp)::   remindelta, reminup, remindown
       !!
       NAMELIST/nampispoc/ xremip , jcpoc  , rshape,ln_dustrfe, kdust, ln_litho, remfe,  &
-         &                xremipc, xremipn, xremipp
+         &                xremipc, xremipn, xremipp, xremafs, xremafb
       !!----------------------------------------------------------------------
       !
       IF(lwp) THEN
@@ -600,6 +616,10 @@ CONTAINS
             WRITE(numout,*) '      remineralisation rate of POC              xremipc   =', xremipc
             WRITE(numout,*) '      remineralisation rate of PON              xremipn   =', xremipn
             WRITE(numout,*) '      remineralisation rate of POP              xremipp   =', xremipp
+         ENDIF
+         IF( ln_feauth ) THEN
+            WRITE(numout,*) '      remineralisation rate of small authigenic Fe xremafs=',xremafs
+            WRITE(numout,*) '      remineralisation rate of big authigenic Fe xremafb=',xremafb
          ENDIF
          WRITE(numout,*) '      Number of lability classes for POC        jcpoc     =', jcpoc
          WRITE(numout,*) '      Shape factor of the gamma distribution    rshape    =', rshape

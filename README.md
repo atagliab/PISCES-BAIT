@@ -14,4 +14,4 @@ and use the associated MY_SRC in a new cfg
 
 namelists and xmls files for use are in the EXPREF folder
 
-Author: Alessandro Tagliabue (last update 1 July 2022)
+Author: Alessandro Tagliabue (last update 23 September 2022)

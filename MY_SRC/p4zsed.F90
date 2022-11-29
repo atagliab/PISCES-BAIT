@@ -187,7 +187,9 @@ CONTAINS
             zirondep(:,:,jk) = zirondep(:,:,jk) + trb(:,:,jk,jplfe) * ( sollfe / tsollfe ) * r1_rday * rfact2
             zpdep   (:,:,jk) = zirondep(:,:,jk) * 1.e-3 / mfrac * 55.85 / 31.
             zsidep  (:,:,jk) = zirondep(:,:,jk) * 0.269 / mfrac * 55.85 / 28.1
-            tra(:,:,jk,jplfe) = tra(:,:,jk,jplfe) - zirondep(:,:,jk)
+!            tra(:,:,jk,jplfe) = tra(:,:,jk,jplfe) - zirondep(:,:,jk)
+            tra(:,:,jk,jplfe) = tra(:,:,jk,jplfe) - (trb(:,:,jk,jplfe) * ( &
+            &                   sollfe / tsollfe ) * r1_rday * rfact2)
          END DO
          ELSE ! no ln_bait
          ! Iron solubilization of particles in the water column

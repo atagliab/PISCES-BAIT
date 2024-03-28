@@ -4,6 +4,10 @@ Updated PISCES with improved ocean iron cycling as part of the NSF-NERC 'BAIT' p
 
 includes cycling of iron oxides, two lithogenic particles phases and two authigenic particle phases
 
+Published as:
+
+Tagliabue, A., et al. (2023), Authigenic mineral phases as a driver of the upper-ocean iron cycle, Nature, 620(7972), 104-109, doi:10.1038/s41586-023-06210-5.
+
 URL: http://forge.ipsl.jussieu.fr/nemo/svn/NEMO/branches/2019/dev_r11708_aumont_PISCES_QUOTA
 
 revision: 13723
